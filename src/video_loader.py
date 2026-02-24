@@ -1,19 +1,27 @@
 import cv2
 
-video_path = "data/Walking (127).mp4"
+def load_video(path: str):
+    cap = cv2.VideoCapture(path)
+    if not cap.isOpened():
+        raise FileNotFoundError(f"Cannot open video: {path}")
+    return cap
 
-cap = cv2.VideoCapture(video_path)
+def get_video_properties(cap):
+    return {
+        "width": int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+        "height": int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+        "fps": cap.get(cv2.CAP_PROP_FPS) or 30.0,
+        "frame_count": int(cap.get(cv2.CAP_PROP_FRAME_COUNT)),
+    }
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+def extract_frames(cap):
+    idx = 0
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        yield idx, frame
+        idx += 1
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    cv2.imshow("Grayscale Video", gray)
-
-    if cv2.waitKey(30) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
+def release_video(cap):
+    cap.release()
